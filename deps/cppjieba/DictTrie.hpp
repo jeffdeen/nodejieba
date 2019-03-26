@@ -40,6 +40,15 @@ class DictTrie {
     delete trie_;
   }
 
+  std::wstring StringToWString(const std::string& str) {
+    int num = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    wchar_t *wide = new wchar_t[num];
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wide, num);
+    std::wstring w_str(wide);
+    delete[] wide;
+    return w_str;
+  }
+
   bool InsertUserWord(const string& word, const string& tag = UNKNOWN_TAG) {
     DictUnit node_info;
     if (!MakeNodeInfo(node_info, word, user_word_default_weight_, tag)) {
@@ -142,7 +151,7 @@ class DictTrie {
     vector<string> files = limonp::Split(filePaths, "|;");
     size_t lineno = 0;
     for (size_t i = 0; i < files.size(); i++) {
-      ifstream ifs(files[i].c_str());
+      ifstream ifs(StringToWString(files[i]).c_str());
       XCHECK(ifs.is_open()) << "open " << files[i] << " failed"; 
       string line;
       
@@ -197,17 +206,18 @@ class DictTrie {
     node_info.tag = tag;
     return true;
   }
-
   void LoadDict(const string& filePath) {
-    ifstream ifs(filePath.c_str());
-    XCHECK(ifs.is_open()) << "open " << filePath << " failed.";
+    wstring wstrPath = StringToWString(filePath);
+    std::ifstream ifs(wstrPath);
+    XCHECK(ifs.is_open()) << "open " << wstrPath.c_str() << " failed.";
     string line;
     vector<string> buf;
 
     DictUnit node_info;
     for (size_t lineno = 0; getline(ifs, line); lineno++) {
-      Split(line, buf, " ");
-      XCHECK(buf.size() == DICT_COLUMN_NUM) << "split result illegal, line:" << line;
+      string lineStr = line;
+      Split(lineStr, buf, " ");
+      XCHECK(buf.size() == DICT_COLUMN_NUM) << "split result illegal, line:" << lineStr;
       MakeNodeInfo(node_info, 
             buf[0], 
             atof(buf[1].c_str()), 

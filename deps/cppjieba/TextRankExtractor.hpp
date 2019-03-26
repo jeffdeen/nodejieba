@@ -201,8 +201,17 @@ namespace cppjieba {
       keywords.resize(topN);
     }
   private:
+  
+    std::wstring StringToWString(const std::string& str) {
+      int num = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+      wchar_t *wide = new wchar_t[num];
+      MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wide, num);
+      std::wstring w_str(wide);
+      delete[] wide;
+      return w_str;
+     }
     void LoadStopWordDict(const string& filePath) {
-      ifstream ifs(filePath.c_str());
+      ifstream ifs(StringToWString(filePath).c_str());
       XCHECK(ifs.is_open()) << "open " << filePath << " failed";
       string line ;
       while (getline(ifs, line)) {

@@ -9,6 +9,7 @@ namespace cppjieba {
 using namespace limonp;
 typedef unordered_map<Rune, double> EmitProbMap;
 
+
 struct HMMModel {
   /*
    * STATUS:
@@ -31,8 +32,16 @@ struct HMMModel {
   }
   ~HMMModel() {
   }
+  std::wstring StringToWString(const std::string& str) {
+    int num = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    wchar_t *wide = new wchar_t[num];
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wide, num);
+    std::wstring w_str(wide);
+    delete[] wide;
+    return w_str;
+}
   void LoadModel(const string& filePath) {
-    ifstream ifile(filePath.c_str());
+    ifstream ifile(StringToWString(filePath).c_str());
     XCHECK(ifile.is_open()) << "open " << filePath << " failed";
     string line;
     vector<string> tmp;
